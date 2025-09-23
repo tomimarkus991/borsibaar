@@ -1,7 +1,7 @@
 package com.borsibaar.backend.mapper;
 
-import com.borsibaar.backend.dto.CategoryRequest;
-import com.borsibaar.backend.dto.CategoryResponse;
+import com.borsibaar.backend.dto.CategoryRequestDto;
+import com.borsibaar.backend.dto.CategoryResponseDto;
 import com.borsibaar.backend.entity.Category;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
@@ -14,12 +14,12 @@ public interface CategoryMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "organizationId", ignore = true)
-    Category toEntity(CategoryRequest request);
+    Category toEntity(CategoryRequestDto request);
 
-    CategoryResponse toResponse(Category category);
+    CategoryResponseDto toResponse(Category category);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "organizationId", ignore = true)
-    void updateEntity(@MappingTarget Category category, CategoryRequest request);
+    void updateEntity(@MappingTarget Category category, CategoryRequestDto request);
 }

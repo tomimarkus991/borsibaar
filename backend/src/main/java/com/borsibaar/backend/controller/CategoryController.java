@@ -1,7 +1,7 @@
 package com.borsibaar.backend.controller;
 
-import com.borsibaar.backend.dto.CategoryRequest;
-import com.borsibaar.backend.dto.CategoryResponse;
+import com.borsibaar.backend.dto.CategoryRequestDto;
+import com.borsibaar.backend.dto.CategoryResponseDto;
 import com.borsibaar.backend.service.CategoryService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +17,7 @@ public class CategoryController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CategoryResponse createCategory(@RequestBody CategoryRequest request) {
+    public CategoryResponseDto createCategory(@RequestBody CategoryRequestDto request) {
         return categoryService.create(request);
     }
 

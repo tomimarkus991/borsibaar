@@ -1,16 +1,14 @@
 package com.borsibaar.backend.service;
 
-import com.borsibaar.backend.dto.CategoryRequest;
-import com.borsibaar.backend.dto.CategoryResponse;
+import com.borsibaar.backend.dto.CategoryRequestDto;
+import com.borsibaar.backend.dto.CategoryResponseDto;
 import com.borsibaar.backend.entity.Category;
 import com.borsibaar.backend.exception.BadRequestException;
 import com.borsibaar.backend.exception.DuplicateResourceException;
 import com.borsibaar.backend.mapper.CategoryMapper;
 import com.borsibaar.backend.repository.CategoryRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class CategoryService {
@@ -23,7 +21,7 @@ public class CategoryService {
     }
 
     @Transactional
-    public CategoryResponse create(CategoryRequest request) {
+    public CategoryResponseDto create(CategoryRequestDto request) {
         Category category = categoryMapper.toEntity(request);
 
         // TODO: derive from auth

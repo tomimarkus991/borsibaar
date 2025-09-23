@@ -1,11 +1,10 @@
 package com.borsibaar.backend.service;
 
-import com.borsibaar.backend.dto.OrganizationRequest;
-import com.borsibaar.backend.dto.OrganizationResponse;
+import com.borsibaar.backend.dto.OrganizationRequestDto;
+import com.borsibaar.backend.dto.OrganizationResponseDto;
 import com.borsibaar.backend.entity.Organization;
 import com.borsibaar.backend.mapper.OrganizationMapper;
 import com.borsibaar.backend.repository.OrganizationRepository;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +25,7 @@ public class OrganizationService {
 
 
     @Transactional
-    public OrganizationResponse create(OrganizationRequest request) {
+    public OrganizationResponseDto create(OrganizationRequestDto request) {
         Organization organization = organizationMapper.toEntity(request);
         organization.setCreatedAt(OffsetDateTime.now());
         Organization saved = organizationRepository.save(organization);
@@ -34,7 +33,7 @@ public class OrganizationService {
     }
 
     @Transactional(readOnly = true)
-    public OrganizationResponse getById(Long id) {
+    public OrganizationResponseDto getById(Long id) {
         Organization organization = organizationRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Organization not found: " + id));

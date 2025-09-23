@@ -1,7 +1,7 @@
 package com.borsibaar.backend.mapper;
 
-import com.borsibaar.backend.dto.OrganizationRequest;
-import com.borsibaar.backend.dto.OrganizationResponse;
+import com.borsibaar.backend.dto.OrganizationRequestDto;
+import com.borsibaar.backend.dto.OrganizationResponseDto;
 import com.borsibaar.backend.entity.Organization;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
@@ -15,13 +15,13 @@ public interface OrganizationMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)  // set in service
     @Mapping(target = "updatedAt", ignore = true)  // set in service
-    Organization toEntity(OrganizationRequest request);
+    Organization toEntity(OrganizationRequestDto request);
 
-    OrganizationResponse toResponse(Organization organization);
+    OrganizationResponseDto toResponse(Organization organization);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    void updateEntity(@MappingTarget Organization target, OrganizationRequest source);
+    void updateEntity(@MappingTarget Organization target, OrganizationRequestDto source);
 }

@@ -1,7 +1,7 @@
 package com.borsibaar.backend.mapper;
 
-import com.borsibaar.backend.dto.ProductRequest;
-import com.borsibaar.backend.dto.ProductResponse;
+import com.borsibaar.backend.dto.ProductRequestDto;
+import com.borsibaar.backend.dto.ProductResponseDto;
 import com.borsibaar.backend.entity.Product;
 import org.mapstruct.*;
 
@@ -10,7 +10,7 @@ public interface ProductMapper {
 
     @Mapping(target = "categoryName", ignore = true)
     @Mapping(target = "currentPrice", source = "basePrice")
-    ProductResponse toResponse(Product product);
+    ProductResponseDto toResponse(Product product);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "organizationId", ignore = true) // set in service
@@ -20,7 +20,7 @@ public interface ProductMapper {
     @Mapping(target = "active", constant = "true")
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    Product toEntity(ProductRequest request);
+    Product toEntity(ProductRequestDto request);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
@@ -31,5 +31,5 @@ public interface ProductMapper {
     @Mapping(target = "active", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    void updateEntity(@MappingTarget Product product, ProductRequest request);
+    void updateEntity(@MappingTarget Product product, ProductRequestDto request);
 }

@@ -1,7 +1,7 @@
 package com.borsibaar.backend.controller;
 
-import com.borsibaar.backend.dto.ProductRequest;
-import com.borsibaar.backend.dto.ProductResponse;
+import com.borsibaar.backend.dto.ProductRequestDto;
+import com.borsibaar.backend.dto.ProductResponseDto;
 import com.borsibaar.backend.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -19,17 +19,18 @@ public class ProductController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ProductResponse create(@RequestBody @Valid ProductRequest request) {
+    public ProductResponseDto create(@RequestBody @Valid ProductRequestDto request) {
         return service.create(request);
     }
 
     @GetMapping("/{id}")
-    public ProductResponse get(@PathVariable Long id) {
+    public ProductResponseDto get(@PathVariable Long id) {
         return service.getById(id);
     }
 
     @DeleteMapping("/{id}")
-    public ProductResponse delete(@PathVariable Long id) {
+    public ProductResponseDto delete(@PathVariable Long id) {
         return service.getById(id);
     }
+
 }

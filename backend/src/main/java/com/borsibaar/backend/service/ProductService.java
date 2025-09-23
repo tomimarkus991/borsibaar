@@ -1,7 +1,7 @@
 package com.borsibaar.backend.service;
 
-import com.borsibaar.backend.dto.ProductRequest;
-import com.borsibaar.backend.dto.ProductResponse;
+import com.borsibaar.backend.dto.ProductRequestDto;
+import com.borsibaar.backend.dto.ProductResponseDto;
 import com.borsibaar.backend.entity.Category;
 import com.borsibaar.backend.entity.Product;
 import com.borsibaar.backend.mapper.ProductMapper;
@@ -27,7 +27,7 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductResponse create(ProductRequest request) {
+    public ProductResponseDto create(ProductRequestDto request) {
         Category cat = categoryRepository.findById(request.categoryId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST, "Category not found: " + request.categoryId()));
@@ -56,8 +56,8 @@ public class ProductService {
 
         Product saved = productRepository.save(entity);
 
-        ProductResponse base = productMapper.toResponse(saved);
-        return new ProductResponse(
+        ProductResponseDto base = productMapper.toResponse(saved);
+        return new ProductResponseDto(
                 base.id(),
                 base.name(),
                 base.description(),
@@ -68,17 +68,17 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public ProductResponse getById(Long id) {
+    public ProductResponseDto getById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Product not found: " + id));
 
-        ProductResponse base = productMapper.toResponse(product);
+        ProductResponseDto base = productMapper.toResponse(product);
         String categoryName = categoryRepository.findById(product.getCategoryId())
                 .map(Category::getName)
                 .orElse(null);
 
-        return new ProductResponse(
+        return new ProductResponseDto(
                 base.id(),
                 base.name(),
                 base.description(),

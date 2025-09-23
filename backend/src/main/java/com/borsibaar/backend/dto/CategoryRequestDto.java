@@ -2,7 +2,7 @@ package com.borsibaar.backend.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record CategoryRequest(
+public record CategoryRequestDto(
         @NotBlank String name,
         Boolean dynamicPricing
 ) {}

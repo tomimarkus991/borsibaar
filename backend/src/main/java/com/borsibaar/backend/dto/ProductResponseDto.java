@@ -2,9 +2,11 @@ package com.borsibaar.backend.dto;
 
 import java.math.BigDecimal;
 
-public record ProductRequest(
+public record ProductResponseDto(
+        Long id,
         String name,
         String description,
         BigDecimal currentPrice,
-        Long categoryId
+        Long categoryId,
+        String categoryName
 ) {}
