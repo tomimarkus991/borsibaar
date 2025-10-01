@@ -1,4 +1,4 @@
-package com.borsibaar.backend.model;
+package com.borsibaar.backend.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

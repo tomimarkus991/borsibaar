@@ -1,10 +1,19 @@
 databaseChangeLog:
   - changeSet:
-      id: 1
-      author: arto
+      id: 000-enable-citext
+      author: kris
+      changes:
+        - sql:
+            dbms: postgresql
+            splitStatements: false
+            sql: CREATE EXTENSION IF NOT EXISTS citext;
+
+  - changeSet:
+      id: 001-create-organizations
+      author: kris
       changes:
         - createTable:
-            tableName: example
+            tableName: organizations
             columns:
               - column:
                   name: id
@@ -12,11 +21,29 @@ databaseChangeLog:
                   autoIncrement: true
                   constraints:
                     primaryKey: true
+                    primaryKeyName: pk_organizations
               - column:
                   name: name
-                  type: VARCHAR(255)
+                  type: CITEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: TIMESTAMPTZ
+                  defaultValueComputed: CURRENT_TIMESTAMP
+        - createIndex:
+            tableName: organizations
+            indexName: idx_organizations_name
+            columns:
+              - column:
+                  name: name
+
   - changeSet:
-      id: 2
+      id: 002-create-roles
       author: arto
       changes:
         - createTable:
@@ -28,6 +55,7 @@ databaseChangeLog:
                   autoIncrement: true
                   constraints:
                     primaryKey: true
+                    primaryKeyName: pk_roles
               - column:
                   name: name
                   type: VARCHAR(50)
@@ -36,7 +64,7 @@ databaseChangeLog:
                     unique: true
 
   - changeSet:
-      id: 3
+      id: 003-create-users
       author: arto
       changes:
         - createTable:
@@ -47,6 +75,7 @@ databaseChangeLog:
                   type: UUID
                   constraints:
                     primaryKey: true
+                    primaryKeyName: pk_users
               - column:
                   name: organization_id
                   type: BIGINT
@@ -55,7 +84,7 @@ databaseChangeLog:
                   type: VARCHAR(255)
               - column:
                   name: email
-                  type: VARCHAR(255)
+                  type: CITEXT
                   constraints:
                     nullable: false
                     unique: true
@@ -64,15 +93,15 @@ databaseChangeLog:
                   type: BIGINT
               - column:
                   name: created_at
-                  type: TIMESTAMP
+                  type: TIMESTAMPTZ
                   defaultValueComputed: CURRENT_TIMESTAMP
               - column:
                   name: updated_at
-                  type: TIMESTAMP
+                  type: TIMESTAMPTZ
                   defaultValueComputed: CURRENT_TIMESTAMP
 
   - changeSet:
-      id: 4
+      id: 004-add-users-fks
       author: arto
       changes:
         - addForeignKeyConstraint:
@@ -81,9 +110,15 @@ databaseChangeLog:
             constraintName: fk_users_roles
             referencedTableName: roles
             referencedColumnNames: id
+        - addForeignKeyConstraint:
+            baseTableName: users
+            baseColumnNames: organization_id
+            constraintName: fk_users_org
+            referencedTableName: organizations
+            referencedColumnNames: id
 
   - changeSet:
-      id: 5
+      id: 005-insert-roles
       author: arto
       changes:
         - insert:
@@ -98,3 +133,142 @@ databaseChangeLog:
               - column:
                   name: name
                   value: ADMIN
+
+  - changeSet:
+      id: 006-create-categories
+      author: kris
+      changes:
+        - createTable:
+            tableName: categories
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_categories
+              - column:
+                  name: organization_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: CITEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: dynamic_pricing
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: categories
+            baseColumnNames: organization_id
+            constraintName: fk_categories_org
+            referencedTableName: organizations
+            referencedColumnNames: id
+            onDelete: RESTRICT
+            onUpdate: RESTRICT
+        - addUniqueConstraint:
+            tableName: categories
+            columnNames: organization_id, name
+            constraintName: uk_categories_org_name
+        - createIndex:
+            tableName: categories
+            indexName: idx_categories_org
+            columns:
+              - column:
+                  name: organization_id
+
+  - changeSet:
+      id: 007-create-products
+      author: kris
+      changes:
+        - createTable:
+            tableName: products
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_products
+              - column:
+                  name: organization_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: category_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: CITEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: VARCHAR(1000)
+              - column:
+                  name: base_price
+                  type: DECIMAL(19,4)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: min_price
+                  type: DECIMAL(19,4)
+              - column:
+                  name: max_price
+                  type: DECIMAL(19,4)
+              - column:
+                  name: is_active
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: TIMESTAMPTZ
+                  defaultValueComputed: CURRENT_TIMESTAMP
+        - addForeignKeyConstraint:
+            baseTableName: products
+            baseColumnNames: organization_id
+            constraintName: fk_products_org
+            referencedTableName: organizations
+            referencedColumnNames: id
+            onDelete: RESTRICT
+            onUpdate: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableName: products
+            baseColumnNames: category_id
+            constraintName: fk_products_category
+            referencedTableName: categories
+            referencedColumnNames: id
+            onDelete: RESTRICT
+            onUpdate: RESTRICT
+        - addUniqueConstraint:
+            tableName: products
+            columnNames: organization_id, name
+            constraintName: uk_products_org_name
+        - createIndex:
+            tableName: products
+            indexName: idx_products_org
+            columns:
+              - column:
+                  name: organization_id
+        - createIndex:
+            tableName: products
+            indexName: idx_products_category
+            columns:
+              - column:
+                  name: category_id

@@ -1,6 +1,5 @@
 package com.borsibaar.backend.controller;
 
-import com.borsibaar.backend.model.UserDTO;
 import com.borsibaar.backend.service.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,16 +22,16 @@ public class AuthController {
 
     @GetMapping("/login/success")
     public void success(HttpServletResponse response, OAuth2AuthenticationToken auth) throws IOException {
-        UserDTO user = authService.processOAuthLogin(auth);
-        String token = user.getToken();
+        var result = authService.processOAuthLogin(auth);
 
-        Cookie cookie = new Cookie("jwt", token);
+        Cookie cookie = new Cookie("jwt", result.dto().token());
         cookie.setHttpOnly(true);
         cookie.setSecure(false); // TODO: Set to true in production with HTTPS
         cookie.setPath("/");
         cookie.setMaxAge(24 * 60 * 60); // 1 day
         response.addCookie(cookie);
 
-        response.sendRedirect(frontendUrl + "/dashboard");
+        String redirect = result.needsOnboarding() ? "/onboarding" : "/dashboard";
+        response.sendRedirect(frontendUrl + redirect);
     }
 }

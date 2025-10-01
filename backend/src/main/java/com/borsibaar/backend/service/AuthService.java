@@ -1,8 +1,10 @@
 package com.borsibaar.backend.service;
 
-import com.borsibaar.backend.model.Role;
-import com.borsibaar.backend.model.User;
-import com.borsibaar.backend.model.UserDTO;
+import com.borsibaar.backend.entity.Role;
+import com.borsibaar.backend.entity.User;
+import com.borsibaar.backend.dto.UserDTO;
+import com.borsibaar.backend.mapper.UserMapper;
+import com.borsibaar.backend.repository.RoleRepository;
 import com.borsibaar.backend.repository.UserRepository;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -11,13 +13,19 @@ import org.springframework.stereotype.Service;
 public class AuthService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final UserMapper userMapper;
+    private final RoleRepository roleRepository;
 
-    public AuthService(UserRepository userRepository, JwtService jwtService) {
+    public record AuthResult(UserDTO dto, boolean needsOnboarding) {}
+
+    public AuthService(UserRepository userRepository, JwtService jwtService, UserMapper userMapper, RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
+        this.userMapper = userMapper;
+        this.roleRepository = roleRepository;
     }
 
-    public UserDTO processOAuthLogin(OAuth2AuthenticationToken auth) {
+    public AuthResult processOAuthLogin(OAuth2AuthenticationToken auth) {
         String email = auth.getPrincipal().getAttribute("email");
         String name = auth.getPrincipal().getAttribute("name");
 
@@ -26,12 +34,12 @@ public class AuthService {
                 .orElse(User.builder()
                         .email(email)
                         .name(name)
-                        .organizationId(1L) // TODO: assign dynamically
                         .build());
 
         // Default role assignment (if new user)
         if (user.getRole() == null) {
-            Role defaultRole = new Role(1L, "USER");
+            Role defaultRole = roleRepository.findByName("USER")
+                    .orElseThrow(() -> new IllegalArgumentException("Default role USER not found"));
             user.setRole(defaultRole);
         }
 
@@ -40,12 +48,8 @@ public class AuthService {
 
         // Issue JWT
         String token = jwtService.generateToken(user.getEmail());
+        boolean needsOnboarding = (user.getOrganizationId() == null);
 
-        return UserDTO.builder()
-                .email(user.getEmail())
-                .name(user.getName())
-                .role(user.getRole().getName())
-                .token(token)
-                .build();
+        return new AuthResult(userMapper.toDto(user, token), needsOnboarding);
     }
 }
