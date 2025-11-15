@@ -36,14 +36,16 @@ export function StationCard({
   const router = useRouter();
 
   return (
-    <div className="bg-card p-6 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
+    <div className="bg-card p-4 sm:p-6 rounded-lg shadow-sm border hover:shadow-md transition-shadow w-full">
       <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
-          <h3 className="text-xl font-bold text-gray-100 mb-1">
+        <div className="flex-1 min-w-0 pr-2">
+          <h3 className="text-xl font-bold text-gray-100 mb-1 truncate">
             {station.name}
           </h3>
           {station.description && (
-            <p className="text-sm text-gray-400">{station.description}</p>
+            <p className="text-sm text-gray-400 line-clamp-2">
+              {station.description}
+            </p>
           )}
         </div>
         <Store className="w-5 h-5 text-blue-400 flex-shrink-0 ml-2" />
@@ -70,12 +72,12 @@ export function StationCard({
         </div>
       )}
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap sm:flex-nowrap">
         <Button
           onClick={() => router.push(`/pos/${station.id}`)}
-          className="flex-1 bg-green-600 hover:bg-green-700"
+          className="flex-1 min-w-0 bg-green-600 hover:bg-green-700"
         >
-          Open Station
+          <span className="truncate">Open Station</span>
         </Button>
 
         {isAdmin && (
@@ -99,6 +101,7 @@ export function StationCard({
                   variant="outline"
                   size="icon"
                   onClick={() => onEditClick(station)}
+                  className="flex-shrink-0"
                 >
                   <Edit className="w-4 h-4" />
                 </Button>
@@ -109,6 +112,7 @@ export function StationCard({
               variant="destructive"
               size="icon"
               onClick={() => onDelete(station.id)}
+              className="flex-shrink-0"
             >
               <Trash2 className="w-4 h-4" />
             </Button>
@@ -118,4 +122,3 @@ export function StationCard({
     </div>
   );
 }
-
