@@ -19,6 +19,15 @@ interface UserSalesStats {
   userEmail: string;
   salesCount: number;
   totalRevenue: number;
+  barStationId: number | null;
+  barStationName: string | null;
+}
+
+interface StationSalesStats {
+  barStationId: number;
+  barStationName: string | null;
+  salesCount: number;
+  totalRevenue: number;
 }
 
 export default function Dashboard() {
@@ -26,6 +35,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [orgName, setOrgName] = useState("-");
   const [salesStats, setSalesStats] = useState<UserSalesStats[]>([]);
+  const [stationStats, setStationStats] = useState<StationSalesStats[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const fetchAll = useCallback(async () => {
@@ -72,6 +82,19 @@ export default function Dashboard() {
         } catch {
           // ignore stats errors silently
         }
+
+        try {
+          const stationStatsRes = await fetch(
+            `/api/backend/inventory/station-sales-stats`,
+            { cache: "no-store" }
+          );
+          if (stationStatsRes.ok) {
+            const stationStatsJson = await stationStatsRes.json();
+            if (Array.isArray(stationStatsJson)) setStationStats(stationStatsJson);
+          }
+        } catch {
+          // ignore stats errors silently
+        }
       } else {
         setOrgName("No organization");
       }
@@ -97,12 +120,12 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-        <div className="min-h-screen w-full bg-background p-6 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading dashboard...</p>
-          </div>
+      <div className="min-h-screen w-full bg-background p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading dashboard...</p>
         </div>
+      </div>
     );
   }
 
@@ -165,17 +188,17 @@ export default function Dashboard() {
             </a>
           </div>
 
-          {salesStats.length > 0 && (
-            <div className="rounded-lg bg-card p-6 shadow">
+          {stationStats.length > 0 && (
+            <div className="rounded-lg bg-card p-6 shadow mb-6">
               <h2 className="text-xl font-semibold text-card-foreground mb-4">
-                Sales Performance
+                Station Leaderboard
               </h2>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border">
                       <th className="text-left py-2 text-muted-foreground font-medium">
-                        User
+                        Station
                       </th>
                       <th className="text-left py-2 text-muted-foreground font-medium">
                         Sales Count
@@ -186,9 +209,59 @@ export default function Dashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {salesStats.map((stat) => (
+                    {stationStats.map((stat) => (
                       <tr
-                        key={stat.userId}
+                        key={stat.barStationId}
+                        className="border-b border-border last:border-0"
+                      >
+                        <td className="py-3">
+                          <div className="font-medium text-card-foreground">
+                            {stat.barStationName || `Station ${stat.barStationId}`}
+                          </div>
+                        </td>
+                        <td className="py-3 text-card-foreground font-medium">
+                          {stat.salesCount}
+                        </td>
+                        <td className="py-3 text-card-foreground font-medium">
+                          €{stat.totalRevenue.toFixed(2)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {salesStats.length > 0 && (
+            <div className="rounded-lg bg-card p-6 shadow">
+              <h2 className="text-xl font-semibold text-card-foreground mb-4">
+                Sales Performance by User
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left py-2 text-muted-foreground font-medium">
+                        User
+                      </th>
+                      <th className="text-left py-2 text-muted-foreground font-medium">
+                        Station
+                      </th>
+                      <th className="text-left py-2 text-muted-foreground font-medium">
+                        Sales Count
+                      </th>
+                      <th className="text-left py-2 text-muted-foreground font-medium">
+                        Total Revenue
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {salesStats.map((stat, index) => (
+                      <tr
+                        key={`${stat.userId}-${
+                          stat.barStationId || "null"
+                        }-${index}`}
                         className="border-b border-border last:border-0"
                       >
                         <td className="py-3">
@@ -200,6 +273,12 @@ export default function Dashboard() {
                               {stat.userEmail}
                             </div>
                           </div>
+                        </td>
+                        <td className="py-3 text-card-foreground">
+                          {stat.barStationName ||
+                            (stat.barStationId
+                              ? `Station ${stat.barStationId}`
+                              : "N/A")}
                         </td>
                         <td className="py-3 text-card-foreground font-medium">
                           {stat.salesCount}

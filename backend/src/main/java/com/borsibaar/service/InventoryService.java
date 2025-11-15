@@ -1,11 +1,13 @@
 package com.borsibaar.service;
 
 import com.borsibaar.dto.*;
+import com.borsibaar.entity.BarStation;
 import com.borsibaar.entity.Inventory;
 import com.borsibaar.entity.InventoryTransaction;
 import com.borsibaar.entity.Product;
 import com.borsibaar.entity.User;
 import com.borsibaar.mapper.InventoryMapper;
+import com.borsibaar.repository.BarStationRepository;
 import com.borsibaar.repository.InventoryRepository;
 import com.borsibaar.repository.InventoryTransactionRepository;
 import com.borsibaar.repository.ProductRepository;
@@ -30,6 +32,7 @@ public class InventoryService {
         private final InventoryTransactionRepository inventoryTransactionRepository;
         private final ProductRepository productRepository;
         private final UserRepository userRepository;
+        private final BarStationRepository barStationRepository;
         private final InventoryMapper inventoryMapper;
 
         @Transactional(readOnly = true)
@@ -317,32 +320,62 @@ public class InventoryService {
                 List<InventoryTransaction> saleTransactions = inventoryTransactionRepository
                                 .findSaleTransactionsByOrganizationId(organizationId);
 
-                // Group transactions by user and calculate statistics
-                Map<UUID, List<InventoryTransaction>> transactionsByUser = saleTransactions.stream()
+                // Group transactions by user and station
+                Map<String, List<InventoryTransaction>> transactionsByUserAndStation = saleTransactions.stream()
                                 .filter(t -> t.getCreatedBy() != null)
-                                .collect(Collectors.groupingBy(InventoryTransaction::getCreatedBy));
+                                .collect(Collectors.groupingBy(transaction -> {
+                                        UUID userId = transaction.getCreatedBy();
+                                        Long stationId = transaction.getBarStationId();
+                                        return userId.toString() + "|"
+                                                        + (stationId != null ? stationId.toString() : "null");
+                                }));
 
-                // Get all users involved in sales
-                List<UUID> userIds = new ArrayList<>(transactionsByUser.keySet());
-                Map<UUID, User> userMap = userRepository.findAllById(userIds).stream()
+                // Get all unique user IDs and station IDs
+                Set<UUID> userIds = saleTransactions.stream()
+                                .map(InventoryTransaction::getCreatedBy)
+                                .filter(Objects::nonNull)
+                                .collect(Collectors.toSet());
+
+                Set<Long> stationIds = saleTransactions.stream()
+                                .map(InventoryTransaction::getBarStationId)
+                                .filter(Objects::nonNull)
+                                .collect(Collectors.toSet());
+
+                // Fetch all users and stations at once
+                Map<UUID, User> userMap = userRepository.findAllById(new ArrayList<>(userIds)).stream()
                                 .collect(Collectors.toMap(User::getId, user -> user));
 
-                // Calculate statistics for each user
-                return transactionsByUser.entrySet().stream()
+                Map<Long, BarStation> stationMap = barStationRepository.findAllById(new ArrayList<>(stationIds))
+                                .stream()
+                                .collect(Collectors.toMap(BarStation::getId, station -> station));
+
+                // Calculate statistics for each user-station combination
+                return transactionsByUserAndStation.entrySet().stream()
                                 .map(entry -> {
-                                        UUID userId = entry.getKey();
-                                        List<InventoryTransaction> userTransactions = entry.getValue();
+                                        String[] parts = entry.getKey().split("\\|");
+                                        UUID userId = UUID.fromString(parts[0]);
+                                        Long stationId = null;
+                                        if (parts.length > 1 && !parts[1].equals("null")) {
+                                                try {
+                                                        stationId = Long.parseLong(parts[1]);
+                                                } catch (NumberFormatException e) {
+                                                        stationId = null;
+                                                }
+                                        }
+
+                                        List<InventoryTransaction> userStationTransactions = entry.getValue();
                                         User user = userMap.get(userId);
+                                        BarStation station = stationId != null ? stationMap.get(stationId) : null;
 
                                         // Count unique sales (by referenceId)
-                                        long salesCount = userTransactions.stream()
+                                        long salesCount = userStationTransactions.stream()
                                                         .filter(t -> t.getReferenceId() != null)
                                                         .map(InventoryTransaction::getReferenceId)
                                                         .distinct()
                                                         .count();
 
                                         // Calculate total revenue by getting all products and their prices
-                                        BigDecimal totalRevenue = userTransactions.stream()
+                                        BigDecimal totalRevenue = userStationTransactions.stream()
                                                         .map(transaction -> {
                                                                 // Get inventory to find product
                                                                 return inventoryRepository
@@ -367,6 +400,74 @@ public class InventoryService {
                                                         userId.toString(),
                                                         user != null ? user.getName() : "Unknown User",
                                                         user != null ? user.getEmail() : "unknown@email.com",
+                                                        salesCount,
+                                                        totalRevenue,
+                                                        stationId,
+                                                        station != null ? station.getName() : null);
+                                })
+                                .sorted((a, b) -> Long.compare(b.salesCount(), a.salesCount())) // Sort by sales count
+                                                                                                // desc
+                                .toList();
+        }
+
+        @Transactional(readOnly = true)
+        public List<StationSalesStatsResponseDto> getStationSalesStats(Long organizationId) {
+                // Get all sale transactions for the organization
+                List<InventoryTransaction> saleTransactions = inventoryTransactionRepository
+                                .findSaleTransactionsByOrganizationId(organizationId);
+
+                // Group transactions by station
+                Map<Long, List<InventoryTransaction>> transactionsByStation = saleTransactions.stream()
+                                .filter(t -> t.getBarStationId() != null)
+                                .collect(Collectors.groupingBy(InventoryTransaction::getBarStationId));
+
+                // Get all unique station IDs
+                Set<Long> stationIds = transactionsByStation.keySet();
+
+                // Fetch all stations at once
+                Map<Long, BarStation> stationMap = barStationRepository.findAllById(new ArrayList<>(stationIds))
+                                .stream()
+                                .collect(Collectors.toMap(BarStation::getId, station -> station));
+
+                // Calculate statistics for each station
+                return transactionsByStation.entrySet().stream()
+                                .map(entry -> {
+                                        Long stationId = entry.getKey();
+                                        List<InventoryTransaction> stationTransactions = entry.getValue();
+                                        BarStation station = stationMap.get(stationId);
+
+                                        // Count unique sales (by referenceId)
+                                        long salesCount = stationTransactions.stream()
+                                                        .filter(t -> t.getReferenceId() != null)
+                                                        .map(InventoryTransaction::getReferenceId)
+                                                        .distinct()
+                                                        .count();
+
+                                        // Calculate total revenue by getting all products and their prices
+                                        BigDecimal totalRevenue = stationTransactions.stream()
+                                                        .map(transaction -> {
+                                                                // Get inventory to find product
+                                                                return inventoryRepository
+                                                                                .findById(transaction.getInventoryId())
+                                                                                .flatMap(inventory -> productRepository
+                                                                                                .findById(inventory
+                                                                                                                .getProductId()))
+                                                                                .map(product -> {
+                                                                                        // Calculate revenue for this
+                                                                                        // transaction
+                                                                                        BigDecimal quantitySold = transaction
+                                                                                                        .getQuantityChange()
+                                                                                                        .abs();
+                                                                                        return product.getBasePrice()
+                                                                                                        .multiply(quantitySold);
+                                                                                })
+                                                                                .orElse(BigDecimal.ZERO);
+                                                        })
+                                                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                                        return new StationSalesStatsResponseDto(
+                                                        stationId,
+                                                        station != null ? station.getName() : null,
                                                         salesCount,
                                                         totalRevenue);
                                 })

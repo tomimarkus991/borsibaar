@@ -802,3 +802,123 @@ databaseChangeLog:
         - dropColumn:
             tableName: inventory_transactions
             columnName: price_before
+
+  - changeSet:
+      id: 013-create-bar-stations
+      author: fred
+      changes:
+        - createTable:
+            tableName: bar_stations
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_bar_stations
+              - column:
+                  name: organization_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: CITEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: VARCHAR(500)
+              - column:
+                  name: is_active
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: TIMESTAMPTZ
+                  defaultValueComputed: CURRENT_TIMESTAMP
+        - addForeignKeyConstraint:
+            baseTableName: bar_stations
+            baseColumnNames: organization_id
+            constraintName: fk_bar_stations_org
+            referencedTableName: organizations
+            referencedColumnNames: id
+            onDelete: RESTRICT
+            onUpdate: RESTRICT
+        - addUniqueConstraint:
+            tableName: bar_stations
+            columnNames: organization_id, name
+            constraintName: uk_bar_stations_org_name
+        - createIndex:
+            tableName: bar_stations
+            indexName: idx_bar_stations_org
+            columns:
+              - column:
+                  name: organization_id
+        - createTable:
+            tableName: user_bar_stations
+            columns:
+              - column:
+                  name: user_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: bar_station_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+        - addPrimaryKey:
+            tableName: user_bar_stations
+            columnNames: user_id, bar_station_id
+            constraintName: pk_user_bar_stations
+        - addForeignKeyConstraint:
+            baseTableName: user_bar_stations
+            baseColumnNames: user_id
+            constraintName: fk_user_bar_stations_user
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE
+            onUpdate: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableName: user_bar_stations
+            baseColumnNames: bar_station_id
+            constraintName: fk_user_bar_stations_station
+            referencedTableName: bar_stations
+            referencedColumnNames: id
+            onDelete: CASCADE
+            onUpdate: RESTRICT
+        - createIndex:
+            tableName: user_bar_stations
+            indexName: idx_user_bar_stations_user
+            columns:
+              - column:
+                  name: user_id
+        - createIndex:
+            tableName: user_bar_stations
+            indexName: idx_user_bar_stations_station
+            columns:
+              - column:
+                  name: bar_station_id
+        - addColumn:
+            tableName: inventory_transactions
+            columns:
+              - column:
+                  name: bar_station_id
+                  type: BIGINT
+                  remarks: "The bar station where this transaction occurred"
+        - addForeignKeyConstraint:
+            baseTableName: inventory_transactions
+            baseColumnNames: bar_station_id
+            constraintName: fk_inventory_trans_bar_station
+            referencedTableName: bar_stations
+            referencedColumnNames: id
+            onDelete: SET NULL
+            onUpdate: RESTRICT
