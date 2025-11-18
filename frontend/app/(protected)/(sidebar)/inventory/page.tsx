@@ -419,7 +419,7 @@ export default function Inventory() {
 
   if (loading) {
     return (
-      <div className="min-h-screen w-full bg-background p-6 flex items-center justify-center">
+      <div className="min-h-screen w-full bg-background p-4 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading inventory...</p>
@@ -429,9 +429,8 @@ export default function Inventory() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="rounded-lg bg-card p-6 shadow-sm mb-6">
+    <div className="min-h-screen bg-background p-4">
+        <div className="rounded-lg bg-card p-6 shadow-sm border-1 border-[color-mix(in oklab, var(--ring) 50%, transparent)]">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <Package className="w-8 h-8 text-blue-600" />
@@ -563,7 +562,7 @@ export default function Inventory() {
                           {new Date(item.updatedAt).toLocaleString()}
                         </td>
                         <td className="py-3 px-4">
-                          <div className="flex justify-center gap-2">
+                          <div className="flex justify-center gap-2 flex-wrap">
                             <Button
                               onClick={() => openAddModal(item)}
                               className="p-2 text-green-100 bg-green-700 hover:bg-green-800 rounded-lg transition"
@@ -609,7 +608,6 @@ export default function Inventory() {
             </table>
           </div>
         </div>
-      </div>
 
       <Dialog
         open={showCreateProductModal}

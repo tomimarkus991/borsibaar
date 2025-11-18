@@ -78,7 +78,7 @@ function SidebarFooterContent() {
     <SidebarMenu>
       <SidebarMenuItem>
         <SidebarMenuButton size="lg" onClick={handleLogout} tooltip="Logout">
-          <LogOut className="!w-5 !h-5" />
+          <LogOut className="!w-6 !h-6" />
           {!isCollapsed && <span className="text-lg font-medium">Logout</span>}
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -88,7 +88,7 @@ function SidebarFooterContent() {
 
 export function AppSidebar() {
   return (
-    <Sidebar variant="floating" collapsible="icon">
+    <Sidebar variant="floating" collapsible="icon" className="p-4 pr-0">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="text-md">Börsibaar</SidebarGroupLabel>

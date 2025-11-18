@@ -99,7 +99,7 @@ export default function ClientProductsByCategory() {
 
   return (
     <div className="min-h-screen w-full bg-[#141224] text-white p-6">
-      <div className="max-w-[1400px] mx-auto grid grid-cols-12 gap-6">
+      <div className="mx-auto grid grid-cols-12 gap-6">
         <div className="col-span-12 text-center">
           <h1 className="text-4xl md:text-5xl font-black tracking-widest select-none">
             TUDENGIBAAR
