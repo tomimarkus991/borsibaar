@@ -212,8 +212,3 @@ server.forward-headers-strategy=framework
   - There is no centralized helper or hook to distinguish “not logged in” from domain errors; each page handles fetch failures differently, leading to inconsistent UX.
   - The user is not always redirected to the login page if they access a protected page without an active auth state; this should be enforced centrally (e.g. middleware + shared fetch helpers).
   - Error messages are mostly inline; using toasts/snackbars or a common error banner component would improve UX and consistency.
-
-- **Typing & shared contracts between frontend and backend**
-  _Modules: `frontend/app/**`, `frontend/utils/**`, backend DTO packages_
-  - TypeScript types are currently hand‑written and can drift out of sync with backend DTOs; there is no code generation or shared contract layer.
-  - Introducing generated types from OpenAPI / SpringDoc, or a shared package for DTO interfaces, would reduce duplication and runtime bugs.
