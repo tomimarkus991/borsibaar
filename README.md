@@ -49,6 +49,28 @@ cd frontend && npm run lint
 docker compose up
 ```
 
+### API Reference
+
+Börsibaar’s frontend interacts with the backend via a typed API client generated from the OpenAPI specification. This ensures that frontend code always stays in sync with the backend DTOs and endpoints.
+
+#### OpenAPI Specification
+
+The OpenAPI spec describes all available endpoints, request/response DTOs, and schemas. It can be accessed locally at: http://localhost:8080/v3/api-docs
+(**NB!** The backend has to be running locally to access it)
+
+#### TypeScript API Client
+
+TypeScript types and API clients are automatically generated using `openapi-typescript-codegen`. Generated types replace manually written DTOs for better type safety and consistency.
+
+Location of generated files:
+```frontend/src/api```
+
+How to regenerate types:
+```
+cd frontend
+npm run gen:api
+```
+
 ## Key Backend Architecture
 
 The Spring Boot backend follows a layered architecture:
