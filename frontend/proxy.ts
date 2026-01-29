@@ -21,7 +21,7 @@ async function fetchUser(req: NextRequest) {
   }
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   if (
     !["/login", "/dashboard", "/onboarding", "/pos"].some((p) =>
