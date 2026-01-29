@@ -89,7 +89,7 @@ export default function ClientProductsByCategory() {
         setErr(null);
       } catch (e) {
         if (!alive) return;
-        setErr(e?.message || "Failed to load products");
+        setErr((e as any)?.message || "Failed to load products");
       } finally {
         setLoading(false);
       }
