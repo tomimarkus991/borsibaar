@@ -5,11 +5,11 @@
 **Meeskonna nimi:** Team 25 - Börsibaar
 
 **Meeskonna liikmed:**
-Hannes - Full-Stack Developer
-Ingrid - Full-Stack Developer
-Taavi - Full-Stack Developer
-Tomi - Tech Lead
-Johanna - Project Manager
+Hannes - Full-Stack Developer, (hannesverlis)
+Ingrid - Full-Stack Developer, (IngridLepik)
+Taavi - Full-Stack Developer, (taavitaht)
+Tomi - Tech Lead, (tomimarkus991)
+Johanna - Project Manager. (jsidla)
 
 ## Töövoo põhimõtted
 
