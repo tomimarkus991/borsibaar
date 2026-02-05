@@ -1,9 +1,19 @@
-FROM eclipse-temurin:21-jdk AS build
+# Build with full jdk
+FROM eclipse-temurin:21-jdk-alpine AS build
 WORKDIR /app
 
-# Copy the pre-built JAR from the target directory
-COPY target/*.jar app.jar
+COPY .mvn/ .mvn
+COPY mvnw pom.xml ./
+RUN ./mvnw dependency:go-offline
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+COPY src ./src
+RUN ./mvnw clean package -DskipTests
+
+# run from a smaller version JRE so the final image would be smaller and 
+# hackers wouldn't have so much tools to find vulnerabilities
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
