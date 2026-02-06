@@ -22,7 +22,7 @@ export default function POSManagement() {
 
   const fetchCurrentUser = async () => {
     try {
-      const response = await fetch("/api/backend/account");
+      const response = await fetch("/api/account");
       if (response.ok) {
         const data = await response.json();
         setCurrentUser(data);
@@ -38,8 +38,8 @@ export default function POSManagement() {
     async (isAdmin: boolean) => {
       try {
         const url = isAdmin
-          ? "/api/backend/bar-stations"
-          : "/api/backend/bar-stations/user";
+          ? "/api/bar-stations"
+          : "/api/bar-stations/user";
 
         const response = await fetch(url, { cache: "no-store" });
 
@@ -68,7 +68,7 @@ export default function POSManagement() {
 
   const fetchAllUsers = useCallback(async () => {
     try {
-      const response = await fetch("/api/backend/users", { cache: "no-store" });
+      const response = await fetch("/api/users", { cache: "no-store" });
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(errorText || "Failed to fetch users");
@@ -114,7 +114,7 @@ export default function POSManagement() {
       userIds: data.userIds,
     };
 
-    const response = await fetch("/api/backend/bar-stations", {
+    const response = await fetch("/api/bar-stations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -143,7 +143,7 @@ export default function POSManagement() {
       userIds: data.userIds,
     };
 
-    const response = await fetch(`/api/backend/bar-stations/${stationId}`, {
+    const response = await fetch(`/api/bar-stations/${stationId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -163,7 +163,7 @@ export default function POSManagement() {
     }
 
     try {
-      const response = await fetch(`/api/backend/bar-stations/${stationId}`, {
+      const response = await fetch(`/api/bar-stations/${stationId}`, {
         method: "DELETE",
       });
 

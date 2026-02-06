@@ -4,7 +4,7 @@
  * BACKEND_URL: For server-side API routes (Next.js server → Backend)
  *   - Development: http://localhost:8080
  *   - Production: http://backend:8080 (Docker internal network)
- *   - Used by: All API routes in app/api/backend/**
+ *   - Used by: All API routes in app/api/**
  *
  * NEXT_PUBLIC_BACKEND_URL: For client-side browser access (Browser → Backend)
  *   - Development: http://localhost:8080
